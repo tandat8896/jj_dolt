@@ -202,6 +202,85 @@ jj log
 jj status
 ```
 
+Sample transcript from this lab:
+
+```text
+$ jj log
+@  wuyvzzlk ... 3ee852c2
+│  (empty) (no description set)
+○  kmwsxmwm ... 017448b2
+│  main: write conflict file
+│ ○  pmlrvuvx ... conflict-demo d3ccf658
+├─╯  feature: write conflict file
+◆  rsvvyyks ... main 61ae7472
+│  docs add jj and dolt lab notes
+~
+
+$ jj bookmark set main -r @-
+Moved 1 bookmarks to kmwsxmwm 017448b2 main* | main: write conflict file
+
+$ jj rebase -b conflict-demo -d main
+Rebased 1 commits to destination
+New conflicts appeared in 1 commits:
+  pmlrvuvx f806acba conflict-demo | (conflict) feature: write conflict file
+Hint: To resolve the conflicts, start by creating a commit on top of
+the conflicted commit:
+  jj new pmlrvuvx
+
+$ jj status
+The working copy has no changes.
+Working copy  (@) : wuyvzzlk 3ee852c2 (empty) (no description set)
+Parent commit (@-): kmwsxmwm 017448b2 main* | main: write conflict file
+
+$ jj new pmlrvuvx
+Working copy  (@) now at: omlrnyon 9cc63f15 (conflict) (empty) (no description set)
+Parent commit (@-)      : pmlrvuvx f806acba conflict-demo | (conflict) feature: write conflict file
+Warning: There are unresolved conflicts at these paths:
+CONFLICT.md    2-sided conflict
+
+$ nvim CONFLICT.md
+# Leave only:
+# main version
+
+$ jj status
+Working copy changes:
+M CONFLICT.md
+Working copy  (@) : omlrnyon 45a9b48f (no description set)
+Parent commit (@-): pmlrvuvx f806acba conflict-demo | (conflict) feature: write conflict file
+Hint: Conflict in parent commit has been resolved in working copy
+
+$ jj diff
+Resolved conflict in CONFLICT.md:
+   1     : <<<<<<< conflict 1 of 1
+   2     : %%%%%%% diff from: rsvvyyks 61ae7472 "docs add jj and dolt lab notes" (parents of rebased revision)
+   3     : \\\\\\\        to: kmwsxmwm 017448b2 "main: write conflict file" (rebase destination)
+   4    1: +main version
+   5     : +++++++ pmlrvuvx d3ccf658 "feature: write conflict file" (rebased revision)
+   6     : feature version
+   7     : >>>>>>> conflict 1 of 1 ends
+
+$ jj squash
+Working copy  (@) now at: pkrqxltu b7b60a3b (empty) (no description set)
+Parent commit (@-)      : pmlrvuvx d21dc763 conflict-demo | feature: write conflict file
+Existing conflicts were resolved or abandoned from 1 commits.
+
+$ jj log
+@  pkrqxltu ... b7b60a3b
+│  (empty) (no description set)
+○  pmlrvuvx ... conflict-demo d21dc763
+│  feature: write conflict file
+○  kmwsxmwm ... main* 017448b2
+│  main: write conflict file
+◆  rsvvyyks ... main@origin 61ae7472
+│  docs add jj and dolt lab notes
+~
+
+$ jj status
+The working copy has no changes.
+Working copy  (@) : pkrqxltu b7b60a3b (empty) (no description set)
+Parent commit (@-): pmlrvuvx d21dc763 conflict-demo | feature: write conflict file
+```
+
 If the conflict demo gets messy:
 
 ```sh
