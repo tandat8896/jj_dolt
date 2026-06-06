@@ -111,6 +111,103 @@ If the rebase is confusing or wrong:
 jj undo
 ```
 
+## Rebase conflict demo
+
+Create a real conflict by making two branches write different content to the
+same file.
+
+Feature side:
+
+```sh
+jj new main
+printf 'feature version\n' > CONFLICT.md
+jj commit -m "feature: write conflict file"
+jj bookmark create conflict-demo -r @-
+```
+
+Main side:
+
+```sh
+jj new main
+printf 'main version\n' > CONFLICT.md
+jj commit -m "main: write conflict file"
+jj bookmark set main -r @-
+```
+
+Rebase feature onto main:
+
+```sh
+jj rebase -b conflict-demo -d main
+```
+
+Expected result:
+
+```text
+New conflicts appeared in 1 commits:
+  <change-id> <commit-id> conflict-demo | (conflict) feature: write conflict file
+```
+
+To resolve, create a working-copy commit on top of the conflicted commit:
+
+```sh
+jj new conflict-demo
+```
+
+Open the conflicted file:
+
+```sh
+nvim CONFLICT.md
+```
+
+Jujutsu conflict markers can look like this:
+
+```text
+<<<<<<< conflict 1 of 1
+%%%%%%% diff from: <base> "docs add jj and dolt lab notes" (parents of rebased revision)
+\\\\\\\        to: <main> "main: write conflict file" (rebase destination)
++main version
++++++++ <feature> "feature: write conflict file" (rebased revision)
+feature version
+>>>>>>> conflict 1 of 1 ends
+```
+
+If choosing the main version, leave only:
+
+```text
+main version
+```
+
+Then check status:
+
+```sh
+jj status
+```
+
+The useful hint is:
+
+```text
+Conflict in parent commit has been resolved in working copy
+```
+
+Move the resolution into the conflicted commit:
+
+```sh
+jj squash
+```
+
+After `jj squash`, the conflicted commit is rewritten without `(conflict)`:
+
+```sh
+jj log
+jj status
+```
+
+If the conflict demo gets messy:
+
+```sh
+jj undo
+```
+
 ## Empty commits
 
 If `jj status` is clean and you run:
