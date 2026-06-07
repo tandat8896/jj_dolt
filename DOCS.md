@@ -13,7 +13,7 @@ Goal:
 Current state:
 
 ```text
-main -> docs: add rebase conflict transcript
+main -> docs: add jj learning roadmap
 @    -> empty working-copy commit
 ```
 
@@ -163,6 +163,173 @@ jj log
 ```
 
 Paste the final `jj status` and `jj log` after doing the exercise.
+
+## Lesson 2: init, colocated Git repo, and Git interop
+
+First principle:
+
+Jujutsu is not a Git replacement at the storage boundary. In normal GitHub
+workflows, JJ can use a Git repository as its backend. That means you can work
+locally with `jj`, while GitHub and teammates still see normal Git commits and
+branches.
+
+The setup used in this lab is a colocated repo:
+
+```text
+repo/
+├── .git/   # Git storage and GitHub interop
+└── .jj/    # Jujutsu metadata and operation log
+```
+
+Git command:
+
+```sh
+git init
+```
+
+JJ equivalent for an existing Git repo:
+
+```sh
+jj git init --colocate
+```
+
+In recent JJ versions, `--colocate` is the default for `jj git init` unless the
+config says otherwise. Keeping the flag in notes is useful because it states the
+intent clearly: Git and JJ operate in the same working directory.
+
+### What changes from Git?
+
+Git branches are refs that usually move as you commit. In JJ, Git-visible branch
+names are represented as bookmarks. A bookmark is only a name pointing to a
+commit. It does not automatically move just because you created a new commit.
+
+That is why this pattern is common:
+
+```sh
+jj commit -m "message"
+jj bookmark set main -r @-
+jj git push --bookmark main --remote origin
+```
+
+Meaning:
+
+- `jj commit`: describe the current working-copy commit and create a new `@`
+- `@-`: the commit that was just created
+- `jj bookmark set main -r @-`: move Git-visible `main` to that commit
+- `jj git push --bookmark main --remote origin`: push that bookmark to GitHub
+
+### Git interop commands
+
+Inspect Git remote:
+
+```sh
+git remote -v
+```
+
+Fetch Git remote data into JJ:
+
+```sh
+jj git fetch --remote origin
+```
+
+Push a bookmark to GitHub:
+
+```sh
+jj git push --bookmark main --remote origin
+```
+
+Create a feature bookmark and push it:
+
+```sh
+jj bookmark create lesson-2-demo -r @-
+jj git push --bookmark lesson-2-demo --remote origin
+```
+
+Delete a bookmark and delete it remotely:
+
+```sh
+jj bookmark delete lesson-2-demo
+jj git push --deleted --remote origin
+```
+
+### Do not confuse these
+
+Temporary push by change:
+
+```sh
+jj git push --change @- --remote origin
+```
+
+This is convenient for quick experiments, but it can create generated branch
+names like:
+
+```text
+push-rovytxzsyoxt
+```
+
+For clean GitHub work, prefer named bookmarks:
+
+```sh
+jj bookmark create my-feature -r @-
+jj git push --bookmark my-feature --remote origin
+```
+
+### Compare with Git
+
+```text
+Git                         JJ
+git init                    jj git init --colocate
+git clone URL               jj git clone URL
+git branch feature          jj bookmark create feature -r @-
+git switch feature          jj new feature / jj edit feature
+git push origin main        jj git push --bookmark main --remote origin
+git fetch origin            jj git fetch --remote origin
+git branch -d feature       jj bookmark delete feature
+```
+
+Important difference:
+
+In Git, "being on a branch" is central. In JJ, "where `@` is" and "where the
+bookmark points" are separate ideas.
+
+### Exercise
+
+Run:
+
+```sh
+jj status
+jj log
+jj bookmark list
+git remote -v
+```
+
+Create a small Lesson 2 commit:
+
+```sh
+printf 'lesson 2: jj uses git interop through bookmarks\n' > LESSON2.md
+jj status
+jj diff
+jj commit -m "lesson: understand jj git interop"
+```
+
+Move `main` to the new commit and push:
+
+```sh
+jj bookmark set main -r @-
+jj git push --bookmark main --remote origin
+```
+
+Check the final state:
+
+```sh
+jj status
+jj log
+jj bookmark list
+```
+
+Paste the final `jj status`, `jj log`, and `jj bookmark list`.
+
+Do not continue to Lesson 3 until this output makes sense.
 
 ## Repo setup
 
