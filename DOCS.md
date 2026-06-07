@@ -1,5 +1,169 @@
 # JJ + Dolt Lab Notes
 
+## Today learning log
+
+Date: 2026-06-07
+
+Goal:
+
+- Learn Jujutsu (`jj`) from Git knowledge.
+- Keep enough command/output notes to explain the workflow later.
+- Use GitHub only through `jj` bookmarks and Git interop.
+
+Current state:
+
+```text
+main -> docs: add rebase conflict transcript
+@    -> empty working-copy commit
+```
+
+Check state anytime:
+
+```sh
+jj status
+jj log
+jj bookmark list
+```
+
+## JJ learning roadmap
+
+### Easy
+
+1. Working copy, change, commit
+   - Git habit: edit -> `git add` -> `git commit`
+   - JJ habit: edit -> changes are already in `@` -> `jj commit`
+   - Commands: `jj status`, `jj diff`, `jj log`, `jj commit`
+
+2. Init and Git interop
+   - Git: `git init`, `git clone`
+   - JJ: `jj git init --colocate`, `jj git clone`
+   - Colocated repos can still use Git/GitHub.
+
+3. Bookmark basics
+   - Git: branch moves automatically on commit
+   - JJ: bookmark is a name that must be moved intentionally
+   - Commands: `jj bookmark create`, `jj bookmark set`, `jj bookmark delete`
+
+### Easy-Medium
+
+4. Push and fetch through Git
+   - Git: `git push origin main`
+   - JJ: `jj git push --bookmark main --remote origin`
+   - Avoid `jj git push --change @-` unless temporary branch names are fine.
+
+5. No stash mindset
+   - Git: `git stash`
+   - JJ: create another working-copy commit with `jj new`, then come back later
+   - Commands: `jj new`, `jj edit`, `jj squash`, `jj restore`
+
+6. Restore and undo
+   - Git: `git restore`, `git reset`, `git reflog`
+   - JJ: `jj restore`, `jj abandon`, `jj undo`, `jj op log`
+
+### Medium
+
+7. Amend-like workflows
+   - Git: `git commit --amend`
+   - JJ: `jj describe`, `jj squash`
+
+8. Partial commits
+   - Git: `git add -p`
+   - JJ: `jj split -i`, `jj commit -i`
+
+9. Abandon and duplicate
+   - Git: reset/cherry-pick patterns
+   - JJ: `jj abandon`, `jj duplicate`
+
+### Hard
+
+10. Rebase
+    - Git: `git rebase main`
+    - JJ: `jj rebase -b <bookmark> -d <destination>`
+    - Rebase moves changes, not just branches.
+
+11. Conflict resolution
+    - Git: edit conflict -> `git add` -> continue
+    - JJ: `jj new <conflicted>`, edit, `jj diff`, `jj squash`
+
+12. Revsets
+    - Git: revision syntax like `HEAD~2`, branch names, ranges
+    - JJ: query-like revision selectors
+    - Examples: `@`, `@-`, `main..@`, `ancestors(@)`
+
+### Very Hard
+
+13. Smart history editing
+    - Replace interactive rebase habits with `split`, `squash`, `describe`,
+      `rebase`, and revsets.
+
+14. Operation log
+    - Git: `reflog`
+    - JJ: `jj op log`, `jj undo`, `jj op restore`
+
+15. Team workflow on GitHub
+    - Local: use `jj`
+    - Remote: expose clean bookmarks as Git branches
+    - Commands: `jj bookmark set`, `jj git push`, `jj git fetch`
+
+### Extreme
+
+16. Multiple working copies
+    - Similar goal to Git worktrees, but in JJ's model.
+
+17. Stacked changes
+    - Build chains of small reviewable commits and move/split/squash them safely.
+
+18. Explaining "Git without pain"
+    - No staging tax.
+    - First-class undo.
+    - History editing is normal.
+    - Git interop remains available.
+
+## Lesson 1: working copy, change, commit
+
+First principle:
+
+In Git, the working directory is separate from commits. In JJ, the working
+copy is itself a commit named `@`.
+
+Important names:
+
+- `@`: current working-copy commit
+- `@-`: parent of `@`
+- change id: stable identity of a change across rewrites
+- commit id: concrete snapshot id; it changes when history is rewritten
+
+Git flow:
+
+```sh
+git status
+git add .
+git commit -m "message"
+```
+
+JJ flow:
+
+```sh
+jj status
+jj diff
+jj commit -m "message"
+```
+
+Exercise:
+
+```sh
+jj status
+jj log
+printf 'lesson 1\n' > LESSON1.md
+jj status
+jj diff
+jj commit -m "lesson: understand jj working copy"
+jj status
+jj log
+```
+
+Paste the final `jj status` and `jj log` after doing the exercise.
+
 ## Repo setup
 
 This repo is a small lab for learning Jujutsu (`jj`) and Dolt with Nix.
